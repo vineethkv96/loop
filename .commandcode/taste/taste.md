@@ -1,0 +1,3 @@
+- Prefers PostgreSQL as the database backend (explicitly requested "postgres tables" for data storage). Confidence: 0.8
+- Values configurability — wants time-based behavior (e.g., reminder intervals) to be user-adjustable rather than hardcoded. Confidence: 0.7
+- Appreciates creative, personality-filled touches in tools and interfaces. Confidence: 0.7

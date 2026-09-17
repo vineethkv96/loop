@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Loop — a todo list that keeps you honest</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div class="bg" aria-hidden="true"></div>
+
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo">L</div>
+      <div>
+        <h1>Loop</h1>
+        <p class="tagline">A todo list that refuses to be ignored.</p>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <button id="remind-now" class="btn ghost" type="button">Remind now</button>
+      <button id="settings-toggle" class="btn ghost" type="button" aria-expanded="false" aria-controls="settings-panel">Settings</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="card settings-card" id="settings-panel" hidden>
+      <h2>Reminder settings</h2>
+      <form id="settings-form">
+        <label class="field">
+          <span>Remind every</span>
+          <span class="inline-field">
+            <input type="number" id="interval" min="1" max="10080" required>
+            <span>minutes</span>
+          </span>
+        </label>
+        <label class="toggle-row">
+          <input type="checkbox" id="enabled">
+          <span>Enable reminders</span>
+        </label>
+        <label class="toggle-row">
+          <input type="checkbox" id="remind-when-empty">
+          <span>Also remind me when everything is done</span>
+        </label>
+        <p id="next-reminder" class="next-reminder"></p>
+        <div class="form-actions">
+          <button type="submit" class="btn primary">Save settings</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="card add-card">
+      <form id="add-form">
+        <label class="sr-only" for="title">Task title</label>
+        <input type="text" id="title" placeholder="What needs doing?" autocomplete="off" required>
+        <label class="sr-only" for="description">Description</label>
+        <input type="text" id="description" placeholder="A little more detail (optional)">
+        <label class="sr-only" for="priority">Priority</label>
+        <select id="priority">
+          <option value="low">Low</option>
+          <option value="medium" selected>Medium</option>
+          <option value="high">High</option>
+        </select>
+        <label class="sr-only" for="due">Due date</label>
+        <input type="date" id="due">
+        <button type="submit" class="btn primary">Add task</button>
+      </form>
+    </section>
+
+    <nav class="filters" aria-label="Task filters">
+      <button class="filter active" data-filter="open" type="button" aria-pressed="true">Open</button>
+      <button class="filter" data-filter="done" type="button" aria-pressed="false">Done</button>
+      <button class="filter" data-filter="all" type="button" aria-pressed="false">All</button>
+    </nav>
+
+    <section id="task-list" class="task-list" aria-live="polite"></section>
+  </main>
+
+  <div id="toast" class="toast" role="status"></div>
+
+  <script type="module" src="/app.js"></script>
+</body>
+</html>

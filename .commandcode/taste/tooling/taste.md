@@ -1,0 +1,1 @@
+- Prefers pnpm over npm as the package manager. Confidence: 0.9
