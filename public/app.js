@@ -167,7 +167,7 @@ settingsForm.addEventListener('submit', (event) => {
 });
 
 remindNowButton.addEventListener('click', () => {
-  fireReminder();
+  fireReminder(true);
 });
 
 document.querySelectorAll('.filter').forEach((button) => {
@@ -212,13 +212,15 @@ function pick(array) {
   return array[Math.floor(Math.random() * array.length)];
 }
 
-function fireReminder() {
+async function fireReminder(requestPermission = false) {
   const settings = db.getSettings();
   const openTasks = db.listTasks('open');
 
   if (openTasks.length === 0) {
     if (settings.remindWhenEmpty) {
-      notify(pick(EMPTY_TITLES), 'No open tasks. Enjoy the calm.');
+      const sent = await notify(pick(EMPTY_TITLES), 'No open tasks. Enjoy the calm.', requestPermission);
+      if (sent) showToast('All-clear reminder sent');
+      return;
     }
     showToast('No open tasks.');
     return;
@@ -233,22 +235,33 @@ function fireReminder() {
     ...(remainder > 0 ? [`...and ${remainder} more`] : []),
   ];
 
-  notify(pick(TITLES), lines.join('\n'));
-  showToast(`Reminder sent for ${openTasks.length} open tasks`);
+  const sent = await notify(pick(TITLES), lines.join('\n'), requestPermission);
+  if (sent) {
+    const taskLabel = openTasks.length === 1 ? 'task' : 'tasks';
+    showToast(`Reminder sent for ${openTasks.length} open ${taskLabel}`);
+  }
 }
 
-function notify(title, message) {
+async function notify(title, message, requestPermission) {
   if (!('Notification' in window)) {
-    showToast(message);
-    return;
+    showToast('This browser does not support notifications.');
+    return false;
   }
-  if (Notification.permission === 'granted') {
+
+  let permission = Notification.permission;
+  if (permission === 'default' && requestPermission) {
+    permission = await Notification.requestPermission();
+  }
+
+  if (permission === 'granted') {
     new Notification(title, { body: message });
-  } else if (Notification.permission !== 'denied') {
-    Notification.requestPermission().then((perm) => {
-      if (perm === 'granted') new Notification(title, { body: message });
-    });
+    return true;
   }
+
+  showToast(permission === 'denied'
+    ? 'Notifications are blocked. Enable them in your browser settings.'
+    : 'Click Remind now to allow notifications.');
+  return false;
 }
 
 function startReminderLoop() {
@@ -270,10 +283,6 @@ function startReminderLoop() {
     fireReminder();
     db.updateSettings({ nextRemindAt: new Date(now + settings.intervalMinutes * 60_000).toISOString() });
   }, TICK_MS);
-}
-
-if ('Notification' in window && Notification.permission === 'default') {
-  Notification.requestPermission();
 }
 
 loadTasks();

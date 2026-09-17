@@ -361,6 +361,28 @@ select:focus {
   border-color: rgba(255, 122, 122, 0.4);
 }
 
+.signature {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.55rem;
+  margin-top: 1.5rem;
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.signature span {
+  width: 18px;
+  height: 2px;
+  background: var(--accent);
+  border-radius: 2px;
+}
+
+.signature strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
 .settings-card h2 {
   margin: 0 0 1rem;
   font-size: 1.05rem;
