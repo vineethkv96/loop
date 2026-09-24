@@ -32,13 +32,13 @@ export function getTask(id) {
   return readTasks().find((task) => task.id === id) || null;
 }
 
-export function createTask({ title, description = '', priority = 'medium', dueAt = null, notes = '' }) {
+export function createTask({ title, description = '', priority = 'medium', dueAt = null }) {
   const tasks = readTasks();
   const task = {
     id: nextId(tasks),
     title,
     description,
-    notes,
+    notes: '',
     priority,
     status: 'open',
     dueAt,

@@ -12,7 +12,6 @@ const titleInput = document.getElementById('title');
 const descriptionInput = document.getElementById('description');
 const priorityInput = document.getElementById('priority');
 const dueInput = document.getElementById('due');
-const notesInput = document.getElementById('notes');
 
 const settingsPanel = document.getElementById('settings-panel');
 const settingsForm = document.getElementById('settings-form');
@@ -130,6 +129,13 @@ function buildTaskNode(task) {
     actions.append(resume);
   }
 
+  const note = document.createElement('button');
+  note.className = 'note';
+  note.type = 'button';
+  note.textContent = task.notes ? 'Edit note' : 'Add note';
+  note.addEventListener('click', () => toggleNoteEditor(task, body));
+  actions.append(note);
+
   const remove = document.createElement('button');
   remove.className = 'delete';
   remove.type = 'button';
@@ -171,6 +177,46 @@ function removeTask(task) {
   loadTasks();
 }
 
+function toggleNoteEditor(task, body) {
+  const existing = body.querySelector('.note-editor');
+  if (existing) {
+    existing.remove();
+    return;
+  }
+
+  const editor = document.createElement('div');
+  editor.className = 'note-editor';
+
+  const textarea = document.createElement('textarea');
+  textarea.rows = 3;
+  textarea.placeholder = 'Add a progress note...';
+  textarea.value = task.notes || '';
+
+  const controls = document.createElement('div');
+  controls.className = 'note-editor-controls';
+
+  const save = document.createElement('button');
+  save.type = 'button';
+  save.className = 'btn primary';
+  save.textContent = 'Save';
+  save.addEventListener('click', () => {
+    db.updateTask(task.id, { notes: textarea.value });
+    showToast('Note saved');
+    loadTasks();
+  });
+
+  const cancel = document.createElement('button');
+  cancel.type = 'button';
+  cancel.className = 'btn ghost';
+  cancel.textContent = 'Cancel';
+  cancel.addEventListener('click', () => loadTasks());
+
+  controls.append(save, cancel);
+  editor.append(textarea, controls);
+  body.append(editor);
+  textarea.focus();
+}
+
 function loadSettings() {
   state.settings = db.getSettings();
   renderSettings();
@@ -190,7 +236,6 @@ addForm.addEventListener('submit', (event) => {
   db.createTask({
     title: titleInput.value,
     description: descriptionInput.value,
-    notes: notesInput.value,
     priority: priorityInput.value,
     dueAt: dueInput.value || null,
   });
