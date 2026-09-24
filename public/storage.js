@@ -21,8 +21,9 @@ function nextId(tasks) {
 export function listTasks(status = 'open') {
   const tasks = readTasks();
   const filtered = status === 'all' ? tasks : tasks.filter((task) => task.status === status);
+  const rank = { open: 0, hold: 1, done: 2 };
   return filtered.sort((a, b) => {
-    if (a.status !== b.status) return a.status === 'done' ? 1 : -1;
+    if (a.status !== b.status) return rank[a.status] - rank[b.status];
     return new Date(b.createdAt) - new Date(a.createdAt);
   });
 }
@@ -31,12 +32,13 @@ export function getTask(id) {
   return readTasks().find((task) => task.id === id) || null;
 }
 
-export function createTask({ title, description = '', priority = 'medium', dueAt = null }) {
+export function createTask({ title, description = '', priority = 'medium', dueAt = null, notes = '' }) {
   const tasks = readTasks();
   const task = {
     id: nextId(tasks),
     title,
     description,
+    notes,
     priority,
     status: 'open',
     dueAt,
@@ -55,14 +57,15 @@ export function updateTask(id, fields) {
 
   if (fields.title !== undefined) task.title = fields.title;
   if (fields.description !== undefined) task.description = fields.description;
+  if (fields.notes !== undefined) task.notes = fields.notes;
   if (fields.priority !== undefined) task.priority = fields.priority;
   if (fields.dueAt !== undefined) task.dueAt = fields.dueAt;
 
   if (fields.status === 'done') {
     task.status = 'done';
     task.completedAt = new Date().toISOString();
-  } else if (fields.status === 'open') {
-    task.status = 'open';
+  } else if (fields.status === 'open' || fields.status === 'hold') {
+    task.status = fields.status;
     task.completedAt = null;
   }
 

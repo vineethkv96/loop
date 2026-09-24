@@ -12,6 +12,7 @@ const titleInput = document.getElementById('title');
 const descriptionInput = document.getElementById('description');
 const priorityInput = document.getElementById('priority');
 const dueInput = document.getElementById('due');
+const notesInput = document.getElementById('notes');
 
 const settingsPanel = document.getElementById('settings-panel');
 const settingsForm = document.getElementById('settings-form');
@@ -40,7 +41,9 @@ function renderTasks() {
         ? 'Nothing open. The loop is clear.'
         : state.filter === 'done'
           ? 'No finished tasks yet.'
-          : 'The list is empty. Add something to start the loop.';
+          : state.filter === 'hold'
+            ? 'Nothing on hold. Everything is in motion.'
+            : 'The list is empty. Add something to start the loop.';
     taskList.append(empty);
     return;
   }
@@ -52,12 +55,13 @@ function renderTasks() {
 
 function buildTaskNode(task) {
   const article = document.createElement('article');
-  article.className = `task${task.status === 'done' ? ' done' : ''}`;
+  const statusClass = task.status === 'done' ? ' done' : task.status === 'hold' ? ' hold' : '';
+  article.className = `task${statusClass}`;
 
   const checkbox = document.createElement('button');
   checkbox.className = 'check';
   checkbox.type = 'button';
-  checkbox.setAttribute('aria-label', task.status === 'done' ? 'Mark as open' : 'Mark as done');
+  checkbox.setAttribute('aria-label', checkLabel(task.status));
   checkbox.textContent = task.status === 'done' ? '✓' : '';
   checkbox.addEventListener('click', () => toggleTask(task));
 
@@ -76,6 +80,13 @@ function buildTaskNode(task) {
     body.append(description);
   }
 
+  if (task.notes) {
+    const notes = document.createElement('p');
+    notes.className = 'task-notes';
+    notes.textContent = task.notes;
+    body.append(notes);
+  }
+
   const meta = document.createElement('div');
   meta.className = 'task-meta';
 
@@ -83,6 +94,13 @@ function buildTaskNode(task) {
   priority.className = `priority priority-${task.priority}`;
   priority.textContent = task.priority;
   meta.append(priority);
+
+  if (task.status === 'hold') {
+    const badge = document.createElement('span');
+    badge.className = 'hold-badge';
+    badge.textContent = 'on hold';
+    meta.append(badge);
+  }
 
   if (task.dueAt) {
     const due = document.createElement('span');
@@ -95,6 +113,23 @@ function buildTaskNode(task) {
 
   const actions = document.createElement('div');
   actions.className = 'task-actions';
+
+  if (task.status === 'open') {
+    const hold = document.createElement('button');
+    hold.className = 'hold';
+    hold.type = 'button';
+    hold.textContent = 'Hold';
+    hold.addEventListener('click', () => holdTask(task));
+    actions.append(hold);
+  } else if (task.status === 'hold') {
+    const resume = document.createElement('button');
+    resume.className = 'resume';
+    resume.type = 'button';
+    resume.textContent = 'Resume';
+    resume.addEventListener('click', () => resumeTask(task));
+    actions.append(resume);
+  }
+
   const remove = document.createElement('button');
   remove.className = 'delete';
   remove.type = 'button';
@@ -106,9 +141,27 @@ function buildTaskNode(task) {
   return article;
 }
 
+function checkLabel(status) {
+  if (status === 'done') return 'Mark as open';
+  if (status === 'hold') return 'Resume task';
+  return 'Mark as done';
+}
+
 function toggleTask(task) {
-  const next = task.status === 'done' ? 'open' : 'done';
+  const next = task.status === 'hold' ? 'open' : task.status === 'done' ? 'open' : 'done';
   db.updateTask(task.id, { status: next });
+  loadTasks();
+}
+
+function holdTask(task) {
+  db.updateTask(task.id, { status: 'hold' });
+  showToast(`"${task.title}" is on hold`);
+  loadTasks();
+}
+
+function resumeTask(task) {
+  db.updateTask(task.id, { status: 'open' });
+  showToast(`"${task.title}" resumed`);
   loadTasks();
 }
 
@@ -137,6 +190,7 @@ addForm.addEventListener('submit', (event) => {
   db.createTask({
     title: titleInput.value,
     description: descriptionInput.value,
+    notes: notesInput.value,
     priority: priorityInput.value,
     dueAt: dueInput.value || null,
   });

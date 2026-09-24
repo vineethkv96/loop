@@ -53,6 +53,8 @@
       <form id="add-form">
         <label class="sr-only" for="title">Task title</label>
         <input type="text" id="title" placeholder="What needs doing?" autocomplete="off" required>
+        <label class="sr-only" for="notes">Notes</label>
+        <textarea id="notes" rows="2" placeholder="Notes or remarks (optional)"></textarea>
         <label class="sr-only" for="description">Description</label>
         <input type="text" id="description" placeholder="A little more detail (optional)">
         <label class="sr-only" for="priority">Priority</label>
@@ -69,6 +71,7 @@
 
     <nav class="filters" aria-label="Task filters">
       <button class="filter active" data-filter="open" type="button" aria-pressed="true">Open</button>
+      <button class="filter" data-filter="hold" type="button" aria-pressed="false">Hold</button>
       <button class="filter" data-filter="done" type="button" aria-pressed="false">Done</button>
       <button class="filter" data-filter="all" type="button" aria-pressed="false">All</button>
     </nav>
